@@ -1,0 +1,49 @@
+Parallel Hashtable with pthreads
+
+In this, a non thread-safe version of a hash table is taken and modified  so that it correctly supports running 
+with multiple threads. This does not involve xv6 ; xv6 doesn’t currently support multiple threads of execution, and 
+while it is possible to do parallel programming with processes, its tricky to arrange access to some shared resource. 
+This problem is essentially done on a multicore machine.
+
+Start by downloading the attached file, parallel hashtable.c to your local machine and you compile it with the 
+following command:
+
+$ gcc -pthread parallel_hashtable.c -o parallel_hashtable
+
+Now run it with one thread:
+
+$ ./parallel_hashtable 1
+
+[main] Inserted 100000 keys in 0.006545 seconds
+[thread 0] 0 keys lost!
+[main] Retrieved 100000/100000 keys in 4.028568 seconds
+So with one thread the program is correct.
+
+Play around with the number of threads. In general, the program gets faster as more threads are added but only up until 
+a certain point. However, sometimes items that get added to the hash table get lost.
+
+Part 1
+
+Our aim is find out under what circumstances entries can get lost. We update parallel hashtable.c so that insert and 
+retrieve do not lose items when run from multiple threads. We now run multiple threads without losing any keys. Compare 
+the speedup of multiple threads to the version that uses no mutex – we see that there is some overhead to adding a mutex.
+
+The following commands may be required for this:
+pthread_mutex_t lock; // declare a lock 
+pthread_mutex_init(&lock, NULL); // initialize the lock 
+pthread_mutex_lock(&lock); // acquire lock 
+pthread_mutex_unlock(&lock); // release lock
+
+The solution to this problem save it to a file called parallel mutex.c. 
+
+Part 2
+
+A copy of parallel mutex.c is made and called parallel spin.c. 
+
+All of the mutex APIs are replaced with the spinlock APIs in pthreads. 
+The spinlock APIs in pthreads are:
+pthread_spinlock_t spinlock; 
+pthread_spin_init(&spinlock, 0); 
+pthread_spin_lock(&spinlock); 
+pthread_spin_unlock(&spinlock);
+
